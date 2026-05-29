@@ -60,27 +60,23 @@ def set_bg_gradient():
 set_bg_gradient()
 
 # --- LOAD MODEL & ENCODER ---
+from huggingface_hub import hf_hub_download
 @st.cache_resource
 def load_model_ser():
-    hf_username = "rismadwp"
-    hf_model_repo = "speech-emotion-recognition" 
-    url_model = f"https://huggingface.co/{hf_username}/{hf_model_repo}/resolve/main/best_model_bi_lstm.keras"
-    url_encoder = f"https://huggingface.co/{hf_username}/{hf_model_repo}/resolve/main/label_encoder.pkl"
-    file_model = "best_model_bi_lstm.keras"
-    file_encoder = "label_encoder.pkl"
-    
-    if not os.path.exists(file_model):
-        with st.spinner("Mengunduh file model dari Hugging Face..."):
-            urllib.request.urlretrieve(url_model, file_model)
-            
-    if not os.path.exists(file_encoder):
-        with st.spinner("Mengunduh kamus label encoder..."):
-            urllib.request.urlretrieve(url_encoder, file_encoder)
-            
-    model_loaded = tf.keras.models.load_model(file_model)
-    le_loaded = joblib.load(file_encoder)
-    return model_loaded, le_loaded
-
+    with st.spinner("Sedang menyambungkan dan mengunduh model dari Hugging Face..."):
+        file_model = hf_hub_download(
+            repo_id="rismadwp/speech-emotion-recognition", 
+            filename="best_model_bi_lstm.keras"
+        )
+        file_encoder = hf_hub_download(
+            repo_id="rismadwp/speech-emotion-recognition", 
+            filename="label_encoder.pkl"
+        )
+        
+        model_loaded = tf.keras.models.load_model(file_model)
+        le_loaded = joblib.load(file_encoder)
+        return model_loaded, le_loaded
+        
 model, le = load_model_ser()
 
 # --- FUNGSI PRE-PROCESSING ---
