@@ -6,3 +6,4 @@ joblib
 matplotlib
 scipy
 streamlit-mic-recorder
+huggingface_hub
