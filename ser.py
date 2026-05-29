@@ -216,7 +216,7 @@ with tab2:
             st.session_state['audio_rec_wave'] = y_rec         
             st.session_state['show_result_rec'] = True
 
-    # --- PINTU UTAMA HASIL ---
+   # --- PINTU UTAMA HASIL ---
     if st.session_state.get('show_result_rec'):
         st.divider()
         
@@ -226,6 +226,7 @@ with tab2:
         st.write("**Visualisasi Bentuk Suara Rekaman:**")
         import matplotlib.pyplot as plt
         fig_rec, ax_rec = plt.subplots(figsize=(10, 2))
+        
         librosa.display.waveshow(st.session_state['audio_rec_wave'], sr=22050, ax=ax_rec, color='#1f77b4')
         ax_rec.set_axis_off()
         st.pyplot(fig_rec)
