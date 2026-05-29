@@ -126,7 +126,7 @@ tab1, tab2 = st.tabs(["**Upload File**", "**Rekam Langsung**"])
 with tab1:
     # 1. Gunakan key dinamis untuk uploader
     uploader_key = f"uploader_{st.session_state['uploader_key']}"
-    uploaded_file = st.file_uploader("**Pilih file audio**", type=["wav"], key=uploader_key)
+    uploaded_file = st.file_uploader("**Pilih file audio**", key=uploader_key)
 
     if uploaded_file:
         st.audio(uploaded_file)
