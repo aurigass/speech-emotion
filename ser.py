@@ -216,20 +216,15 @@ with tab2:
             st.session_state['audio_rec_wave'] = y_rec         
             st.session_state['show_result_rec'] = True
 
-   # --- PINTU UTAMA HASIL ---
-    if st.session_state.get('show_result_rec'):
-        st.divider()
-        
-        st.write("**Putar Ulang Rekaman:**")
-        st.audio(st.session_state['audio_rec_raw'], format='audio/wav')
-        
-        st.write("**Visualisasi Bentuk Suara Rekaman:**")
-        import matplotlib.pyplot as plt
-        fig_rec, ax_rec = plt.subplots(figsize=(10, 2))
-        
-        librosa.display.waveshow(st.session_state['audio_rec_wave'], sr=22050, ax=ax_rec, color='#1f77b4')
-        ax_rec.set_axis_off()
-        st.pyplot(fig_rec)
+        # --- TAMPILKAN HASIL (Jika sudah pernah dianalisis) ---
+        if st.session_state.get('show_result'):
+            # Tampilkan Waveform
+            st.write("**Visualisasi Bentuk Suara:**")
+            fig, ax = plt.subplots(figsize=(10, 2))
+            librosa.display.waveshow(y_wave, sr=sr_wave, ax=ax, color='#1f77b4')
+            ax.set_axis_off()
+            st.pyplot(fig)
 
-        st.success(f"**Hasil Prediksi:** **{st.session_state['hasil_emosi'].upper()}**")
-        st.info(f"**Confidence:** **{st.session_state['hasil_conf']:.2f}%**")
+            # Tampilkan Tulisan Hasil
+            st.success(f"**Hasil Prediksi:** **{st.session_state['hasil_emosi'].upper()}**")
+            st.info(f"**Confidence:** **{st.session_state['hasil_conf']:.2f}%**")
