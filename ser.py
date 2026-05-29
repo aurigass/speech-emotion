@@ -191,44 +191,48 @@ with tab2:
         )
     with col_rec2:
         st.button("Reset Hasil", use_container_width=True, on_click=reset_app)
+
     if audio_record:
         raw_audio_bytes = audio_record['bytes']
         
         with st.spinner("Mengekstrak fitur dan memprediksi emosi suara..."):
             import io
             import soundfile as sf
-            try:
-                buffer = io.BytesIO(raw_audio_bytes)
-                y_rec, sr_rec = librosa.load(buffer, sr=22050)
-            except Exception as e:
-                with open("temp_live_rec.wav", "wb") as f:
-                    f.write(raw_audio_bytes)
-                y_rec, sr_rec = librosa.load("temp_live_rec.wav", sr=22050)
             
+            buffer = io.BytesIO(raw_audio_bytes)
+            data, samplerate = sf.read(buffer)
+            
+            if len(data.shape) > 1:
+                data = data.mean(axis=1)
+                
+            # Pastikan sampling rate disesuaikan ke 22050 (sesuai kebutuhan model Bi-LSTM kamu)
+            import librosa
+            y_rec = librosa.resample(data, orig_sr=samplerate, target_sr=22050)
+            sr_rec = 22050
+            
+            # Ekstraksi fitur dan prediksi
             feat = process_audio(y_rec, sr_rec)
             preds = model.predict(feat, verbose=0)
             
+            # Simpan hasil olahan ke session_state
             st.session_state['hasil_emosi'] = le.inverse_transform([np.argmax(preds)])[0]
             st.session_state['hasil_conf'] = np.max(preds) * 100
-            st.session_state['audio_rec_raw'] = raw_audio_bytes # Untuk diputar di audio player
-            st.session_state['audio_rec_wave'] = y_rec         # Untuk digambar jadi waveform
+            st.session_state['audio_rec_raw'] = raw_audio_bytes 
+            st.session_state['audio_rec_wave'] = y_rec         
             st.session_state['show_result_rec'] = True
 
     # --- PINTU UTAMA HASIL ---
     if st.session_state.get('show_result_rec'):
         st.divider()
         
-        # 1. Audio Player untuk memutar balik rekaman browser
-        st.write("**Putar Unjuk Rekaman:**")
+        st.write("**Putar Ulang Rekaman:**")
         st.audio(st.session_state['audio_rec_raw'], format='audio/wav')
         
-        # 2. Visualisasi Waveform menggunakan Librosa
         st.write("**Visualisasi Bentuk Suara Rekaman:**")
         fig_rec, ax_rec = plt.subplots(figsize=(10, 2))
         librosa.display.waveshow(st.session_state['audio_rec_wave'], sr=22050, ax=ax_rec, color='#1f77b4')
         ax_rec.set_axis_off()
         st.pyplot(fig_rec)
 
-        # 3. Metrik Hasil Prediksi Emosi Podkes
         st.success(f"**Hasil Prediksi:** **{st.session_state['hasil_emosi'].upper()}**")
         st.info(f"**Confidence:** **{st.session_state['hasil_conf']:.2f}%**")
