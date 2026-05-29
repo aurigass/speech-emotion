@@ -3,6 +3,6 @@ numpy
 librosa
 tensorflow
 joblib
-sounddevice
 matplotlib
 scipy
+streamlit-mic-recorder
