@@ -182,46 +182,53 @@ with tab2:
     col_rec1, col_rec2 = st.columns(2)
     
     with col_rec1:
-        btn_rekam = st.button("Mulai Rekam", use_container_width=True)
+        from streamlit_mic_recorder import mic_recorder
+        audio_record = mic_recorder(
+            start_prompt="Mulai Rekam",
+            stop_prompt="Selesai Rekam",
+            key='perekam_browser_tiwi',
+            use_container_width=True
+        )
     with col_rec2:
         st.button("Reset Hasil", use_container_width=True, on_click=reset_app)
-
-    if btn_rekam:
-        duration = 6.0
-        sr = 22050
-        with st.spinner("Perekaman berjalan... Silakan bicara!"):
-            recording = sd.rec(int(duration * sr), samplerate=sr, channels=1)
-            sd.wait()
-            st.success("Rekaman selesai!")
+    if audio_record:
+        raw_audio_bytes = audio_record['bytes']
+        
+        with st.spinner("Mengekstrak fitur dan memprediksi emosi suara..."):
+            import io
+            import soundfile as sf
+            try:
+                buffer = io.BytesIO(raw_audio_bytes)
+                y_rec, sr_rec = librosa.load(buffer, sr=22050)
+            except Exception as e:
+                with open("temp_live_rec.wav", "wb") as f:
+                    f.write(raw_audio_bytes)
+                y_rec, sr_rec = librosa.load("temp_live_rec.wav", sr=22050)
             
-            y_rec = recording.flatten()
-            
-            # Prediksi
-            feat = process_audio(y_rec, sr)
+            feat = process_audio(y_rec, sr_rec)
             preds = model.predict(feat, verbose=0)
             
-            # Simpan semuanya ke state
             st.session_state['hasil_emosi'] = le.inverse_transform([np.argmax(preds)])[0]
             st.session_state['hasil_conf'] = np.max(preds) * 100
-            st.session_state['audio_rec'] = y_rec
+            st.session_state['audio_rec_raw'] = raw_audio_bytes # Untuk diputar di audio player
+            st.session_state['audio_rec_wave'] = y_rec         # Untuk digambar jadi waveform
             st.session_state['show_result_rec'] = True
 
     # --- PINTU UTAMA HASIL ---
     if st.session_state.get('show_result_rec'):
         st.divider()
         
-        # 1. Audio Player (TAMBAHAN BARU)
-        # Bagian ini untuk memutar suara yang baru saja direkam
-        st.write("**Putar Ulang Rekaman:**")
-        st.audio(st.session_state['audio_rec'], sample_rate=22050)
+        # 1. Audio Player untuk memutar balik rekaman browser
+        st.write("**Putar Unjuk Rekaman:**")
+        st.audio(st.session_state['audio_rec_raw'], format='audio/wav')
         
-        # 2. Visualisasi Waveform
+        # 2. Visualisasi Waveform menggunakan Librosa
         st.write("**Visualisasi Bentuk Suara Rekaman:**")
         fig_rec, ax_rec = plt.subplots(figsize=(10, 2))
-        librosa.display.waveshow(st.session_state['audio_rec'], sr=22050, ax=ax_rec, color='#1f77b4')
+        librosa.display.waveshow(st.session_state['audio_rec_wave'], sr=22050, ax=ax_rec, color='#1f77b4')
         ax_rec.set_axis_off()
         st.pyplot(fig_rec)
 
-        # 3. Metrik Hasil
+        # 3. Metrik Hasil Prediksi Emosi Podkes
         st.success(f"**Hasil Prediksi:** **{st.session_state['hasil_emosi'].upper()}**")
         st.info(f"**Confidence:** **{st.session_state['hasil_conf']:.2f}%**")
