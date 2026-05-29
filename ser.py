@@ -81,7 +81,7 @@ def load_model_ser():
     le_loaded = joblib.load(file_encoder)
     return model_loaded, le_loaded
 
-    model, le = load_model_ser()
+model, le = load_model_ser()
 
 # --- FUNGSI PRE-PROCESSING ---
 def process_audio(y, sr=22050):
