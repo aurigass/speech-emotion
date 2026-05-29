@@ -71,7 +71,7 @@ def load_model_ser():
 
 model_loaded = tf.keras.models.load_model("best_model_bi_lstm.keras")
 le_loaded = joblib.load("label_encoder.pkl")
-return model, le
+return model_loaded, le_loaded
 
 model, le = load_model_ser()
 
