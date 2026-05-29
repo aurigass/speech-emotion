@@ -182,6 +182,7 @@ with tab2:
     col_rec1, col_rec2 = st.columns(2)
     
     with col_rec1:
+        # Panggil mic_recorder secara langsung
         from streamlit_mic_recorder import mic_recorder
         audio_record = mic_recorder(
             start_prompt="Mulai Rekam",
@@ -196,25 +197,19 @@ with tab2:
         raw_audio_bytes = audio_record['bytes']
         
         with st.spinner("Mengekstrak fitur dan memprediksi emosi suara..."):
+            import numpy as np
             import io
-            import soundfile as sf
+            audio_array = np.frombuffer(raw_audio_bytes, dtype=np.int16).astype(np.float32) / 32768.0
             
-            buffer = io.BytesIO(raw_audio_bytes)
-            data, samplerate = sf.read(buffer)
-            
-            if len(data.shape) > 1:
-                data = data.mean(axis=1)
-                
-            # Pastikan sampling rate disesuaikan ke 22050 (sesuai kebutuhan model Bi-LSTM kamu)
             import librosa
-            y_rec = librosa.resample(data, orig_sr=samplerate, target_sr=22050)
+            y_rec = librosa.resample(audio_array, orig_sr=44100, target_sr=22050)
             sr_rec = 22050
             
-            # Ekstraksi fitur dan prediksi
+            # Proses ekstraksi fitur dan prediksi model
             feat = process_audio(y_rec, sr_rec)
             preds = model.predict(feat, verbose=0)
             
-            # Simpan hasil olahan ke session_state
+            # Simpan hasil olahan ke session_state agar tidak hilang saat halaman refresh
             st.session_state['hasil_emosi'] = le.inverse_transform([np.argmax(preds)])[0]
             st.session_state['hasil_conf'] = np.max(preds) * 100
             st.session_state['audio_rec_raw'] = raw_audio_bytes 
@@ -229,6 +224,7 @@ with tab2:
         st.audio(st.session_state['audio_rec_raw'], format='audio/wav')
         
         st.write("**Visualisasi Bentuk Suara Rekaman:**")
+        import matplotlib.pyplot as plt
         fig_rec, ax_rec = plt.subplots(figsize=(10, 2))
         librosa.display.waveshow(st.session_state['audio_rec_wave'], sr=22050, ax=ax_rec, color='#1f77b4')
         ax_rec.set_axis_off()
