@@ -3,7 +3,6 @@ import numpy as np
 import librosa
 import tensorflow as tf
 import joblib
-import sounddevice as sd
 import matplotlib.pyplot as plt
 import io
 from scipy.io.wavfile import write
