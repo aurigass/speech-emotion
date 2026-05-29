@@ -69,11 +69,11 @@ def load_model_ser():
     file_model = "best_model_bi_lstm.keras"
     file_encoder = "label_encoder.pkl"
 
-model_loaded = tf.keras.models.load_model("best_model_bi_lstm.keras")
-le_loaded = joblib.load("label_encoder.pkl")
-return model_loaded, le_loaded
-
-model, le = load_model_ser()
+    model_loaded = tf.keras.models.load_model("best_model_bi_lstm.keras")
+    le_loaded = joblib.load("label_encoder.pkl")
+    return model_loaded, le_loaded
+    
+    model, le = load_model_ser()
 
 # --- FUNGSI PRE-PROCESSING ---
 def process_audio(y, sr=22050):
