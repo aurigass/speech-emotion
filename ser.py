@@ -62,11 +62,16 @@ set_bg_gradient()
 # --- LOAD MODEL & ENCODER ---
 @st.cache_resource
 def load_model_ser():
-    model = tf.keras.models.load_model("best_model_bi_lstm.keras")
-    le = joblib.load("label_encoder.pkl")
-    return model, le
-
-model, le = load_model_ser()
+    # Menggunakan akun Hugging Face Tiwi yang asli
+    hf_username = "rismadwp"
+    hf_model_repo = "speech-emotion-recognition" 
+    
+    # URL Unduhan Langsung (Direct Download) resmi dari Hugging Face
+    url_model = f"https://huggingface.co/{hf_username}/{hf_model_repo}/resolve/main/best_model_bi_lstm.keras"
+    url_encoder = f"https://huggingface.co/{hf_username}/{hf_model_repo}/resolve/main/label_encoder.pkl"
+    
+    file_model = "best_model_bi_lstm.keras"
+    file_encoder = "label_encoder.pkl"
 
 # --- FUNGSI PRE-PROCESSING ---
 def process_audio(y, sr=22050):
